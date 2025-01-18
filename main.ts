@@ -42,9 +42,7 @@ const randomWait = async (minMs: number, maxMs: number) => {
 };
 
 const fetchFeedlySession = async (email: string, password: string) => {
-  const browser = await chromium.launch({
-    headless: false,
-  });
+  const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
 
