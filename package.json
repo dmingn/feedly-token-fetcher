@@ -2,12 +2,27 @@
   "name": "feedly-token-updater",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {},
-  "author": "",
-  "license": "ISC",
+  "main": "main.ts",
+  "scripts": {
+    "codegen": "playwright codegen feedly.com",
+    "main": "tsx --env-file=.env main.ts"
+  },
+  "author": {
+    "name": "dmingn",
+    "email": "dmingn@users.noreply.github.com"
+  },
+  "license": "MIT",
   "devDependencies": {
+    "@types/node": "^22.10.7",
+    "prettier": "^3.4.2",
+    "prettier-plugin-organize-imports": "^4.1.0"
+  },
+  "dependencies": {
     "@playwright/test": "^1.49.1",
-    "@types/node": "^22.10.7"
+    "commander": "^13.0.0",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
   }
 }
