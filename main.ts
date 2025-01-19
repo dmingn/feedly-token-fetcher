@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { writeFile } from 'fs/promises';
 import pino from 'pino';
-import { chromium } from 'playwright';
+import { chromium, Page } from 'playwright';
 
 const program = new Command();
 program
@@ -41,6 +41,17 @@ const randomWait = async (minMs: number, maxMs: number) => {
   return new Promise((resolve) => setTimeout(resolve, delay));
 };
 
+const debugPage = async (page: Page) => {
+  logger.debug(`Page URL: ${page.url()}`);
+  logger.debug(`Page title: ${await page.title()}`);
+  logger.debug(
+    `Local storage keys: ${await page.evaluate(() => Object.keys(localStorage))}`,
+  );
+  logger.debug(
+    `Session storage keys: ${await page.evaluate(() => Object.keys(sessionStorage))}`,
+  );
+};
+
 const fetchFeedlySession = async (email: string, password: string) => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
@@ -49,18 +60,25 @@ const fetchFeedlySession = async (email: string, password: string) => {
   try {
     await page.goto('https://feedly.com/');
     logger.debug('Navigated to Feedly');
+    await debugPage(page);
 
     await page.waitForLoadState('networkidle');
+    await debugPage(page);
+
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Log in', exact: true }).click();
     logger.debug('Clicked on Log in');
 
     await page.waitForLoadState('networkidle');
+    await debugPage(page);
+
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Sign in with Email' }).click();
     logger.debug('Clicked on Sign in with Email');
 
     await page.waitForLoadState('networkidle');
+    await debugPage(page);
+
     await randomWait(500, 2000);
     await page.getByPlaceholder('Enter your email').fill(email);
     logger.debug('Filled in email');
@@ -70,6 +88,8 @@ const fetchFeedlySession = async (email: string, password: string) => {
     logger.debug('Clicked on Next');
 
     await page.waitForLoadState('networkidle');
+    await debugPage(page);
+
     await randomWait(500, 2000);
     await page.getByPlaceholder('Password').click();
     logger.debug('Clicked on Password');
@@ -83,6 +103,8 @@ const fetchFeedlySession = async (email: string, password: string) => {
     logger.debug('Clicked on Login');
 
     await page.waitForLoadState('networkidle');
+    await debugPage(page);
+
     const feedlySession = await page.evaluate((key) => {
       return localStorage.getItem(key);
     }, 'feedly.session');
