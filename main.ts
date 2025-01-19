@@ -117,10 +117,6 @@ const fetchFeedlySession = async (email: string, password: string) => {
     return feedlySession;
   } catch (error) {
     logger.error(error);
-    logger.debug(`Page URL: ${page.url()}`);
-    logger.debug(`Page title: ${await page.title()}`);
-    logger.debug(`Page content: ${await page.content()}`);
-    logger.debug(`Local storage: ${await page.evaluate(() => localStorage)}`);
   } finally {
     await page.close();
     logger.debug('Closed page');
