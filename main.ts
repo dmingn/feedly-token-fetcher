@@ -103,9 +103,13 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('button', { name: 'Login' }).click();
     logger.debug('Clicked on Login');
 
-    const feedlySession = await page.waitForFunction((key) => {
-      return localStorage.getItem(key);
-    }, 'feedly.session');
+    const key = 'feedly.session';
+    await page.waitForFunction((key) => localStorage.getItem(key), key);
+    const feedlySession = await page.evaluate(
+      (key) => localStorage.getItem(key),
+      key,
+    );
+
     if (!feedlySession) {
       throw new Error(`Failed to fetch Feedly session: ${feedlySession}`);
     }
