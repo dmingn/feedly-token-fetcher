@@ -1,1 +1,1 @@
-# feedly-token-updater
+# feedly-token-fetcher
