@@ -106,12 +106,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('button', { name: 'Login' }).click();
     logger.debug('Clicked on Login');
 
-    await page.waitForURL('**/i/collection/content/user**', {
-      waitUntil: 'networkidle',
-    });
-    await debugPage(page);
-
-    const feedlySession = await page.evaluate((key) => {
+    const feedlySession = await page.waitForFunction((key) => {
       return localStorage.getItem(key);
     }, 'feedly.session');
     if (!feedlySession) {
