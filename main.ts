@@ -86,11 +86,19 @@ const fetchFeedlySession = async (email: string, password: string) => {
     const feedlySession = await page.evaluate((key) => {
       return localStorage.getItem(key);
     }, 'feedly.session');
+    if (!feedlySession) {
+      throw new Error(`Failed to fetch Feedly session: ${feedlySession}`);
+    }
+
     logger.debug(`Fetched Feedly session: ${feedlySession}`);
 
     return feedlySession;
   } catch (error) {
     logger.error(error);
+    logger.debug(`Page URL: ${page.url()}`);
+    logger.debug(`Page title: ${await page.title()}`);
+    logger.debug(`Page content: ${await page.content()}`);
+    logger.debug(`Local storage: ${await page.evaluate(() => localStorage)}`);
   } finally {
     await page.close();
     logger.debug('Closed page');
@@ -119,10 +127,6 @@ const outputFeedlyToken = async (
   const { email, password } = getEmailPassword();
 
   const feedlySession = await fetchFeedlySession(email, password);
-  if (!feedlySession) {
-    logger.error('Error: Failed to fetch Feedly session');
-    process.exit(1);
-  }
 
   const feedlyToken = JSON.parse(feedlySession).feedlyToken;
 
