@@ -58,25 +58,27 @@ const fetchFeedlySession = async (email: string, password: string) => {
   const page = await context.newPage();
 
   try {
-    await page.goto('https://feedly.com/');
+    await page.goto('https://feedly.com/', {
+      waitUntil: 'networkidle',
+    });
     logger.debug('Navigated to Feedly');
     await debugPage(page);
-
-    await page.waitForLoadState('networkidle');
-    await debugPage(page);
-
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Log in', exact: true }).click();
     logger.debug('Clicked on Log in');
 
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/auth/auth**', {
+      waitUntil: 'networkidle',
+    });
     await debugPage(page);
 
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Sign in with Email' }).click();
     logger.debug('Clicked on Sign in with Email');
 
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/auth/login/checkEmail**', {
+      waitUntil: 'networkidle',
+    });
     await debugPage(page);
 
     await randomWait(500, 2000);
@@ -87,7 +89,9 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('button', { name: 'Next' }).click();
     logger.debug('Clicked on Next');
 
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/auth/login/checkPassword**', {
+      waitUntil: 'networkidle',
+    });
     await debugPage(page);
 
     await randomWait(500, 2000);
@@ -102,10 +106,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('button', { name: 'Login' }).click();
     logger.debug('Clicked on Login');
 
-    await page.waitForLoadState('networkidle');
-    await debugPage(page);
-
-    const feedlySession = await page.evaluate((key) => {
+    const feedlySession = await page.waitForFunction((key) => {
       return localStorage.getItem(key);
     }, 'feedly.session');
     if (!feedlySession) {
