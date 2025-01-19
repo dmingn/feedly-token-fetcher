@@ -67,7 +67,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('link', { name: 'Log in', exact: true }).click();
     logger.debug('Clicked on Log in');
 
-    await page.waitForURL('https://feedly.com/v3/auth/auth', {
+    await page.waitForURL('**/auth/auth**', {
       waitUntil: 'networkidle',
     });
     await debugPage(page);
@@ -76,7 +76,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('link', { name: 'Sign in with Email' }).click();
     logger.debug('Clicked on Sign in with Email');
 
-    await page.waitForURL('https://feedly.com/v3/auth/login/checkEmail', {
+    await page.waitForURL('**/auth/login/checkEmail**', {
       waitUntil: 'networkidle',
     });
     await debugPage(page);
@@ -89,7 +89,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('button', { name: 'Next' }).click();
     logger.debug('Clicked on Next');
 
-    await page.waitForURL('https://feedly.com/v3/auth/login/checkPassword', {
+    await page.waitForURL('**/auth/login/checkPassword**', {
       waitUntil: 'networkidle',
     });
     await debugPage(page);
@@ -106,7 +106,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.getByRole('button', { name: 'Login' }).click();
     logger.debug('Clicked on Login');
 
-    await page.waitForURL('https://feedly.com/i/collection/content/user', {
+    await page.waitForURL('**/i/collection/content/user**', {
       waitUntil: 'networkidle',
     });
     await debugPage(page);
