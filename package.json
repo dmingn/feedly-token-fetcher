@@ -1,5 +1,5 @@
 {
-  "name": "feedly-token-updater",
+  "name": "feedly-token-fetcher",
   "version": "0.1.0",
   "description": "",
   "main": "main.ts",
