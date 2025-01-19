@@ -62,7 +62,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
       waitUntil: 'networkidle',
     });
     logger.debug('Navigated to Feedly');
-    await debugPage(page);
+
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Log in', exact: true }).click();
     logger.debug('Clicked on Log in');
@@ -70,7 +70,6 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.waitForURL('**/auth/auth**', {
       waitUntil: 'networkidle',
     });
-    await debugPage(page);
 
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Sign in with Email' }).click();
@@ -79,7 +78,6 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.waitForURL('**/auth/login/checkEmail**', {
       waitUntil: 'networkidle',
     });
-    await debugPage(page);
 
     await randomWait(500, 2000);
     await page.getByPlaceholder('Enter your email').fill(email);
@@ -92,7 +90,6 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.waitForURL('**/auth/login/checkPassword**', {
       waitUntil: 'networkidle',
     });
-    await debugPage(page);
 
     await randomWait(500, 2000);
     await page.getByPlaceholder('Password').click();
@@ -118,10 +115,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     return feedlySession;
   } catch (error) {
     logger.error(error);
-    logger.debug(`Page URL: ${page.url()}`);
-    logger.debug(`Page title: ${await page.title()}`);
-    logger.debug(`Page content: ${await page.content()}`);
-    logger.debug(`Local storage: ${await page.evaluate(() => localStorage)}`);
+    await debugPage(page);
   } finally {
     await page.close();
     logger.debug('Closed page');
