@@ -2,7 +2,8 @@ FROM node:22-slim AS builder
 
 WORKDIR /workdir
 
-RUN npx -y playwright@1.49.1 install chromium --with-deps --only-shell
+ARG PLAYWRIGHT_VERSION=1.50.1
+RUN npx -y playwright@${PLAYWRIGHT_VERSION} install chromium --with-deps --only-shell
 
 COPY package*.json ./
 
