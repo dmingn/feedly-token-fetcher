@@ -49,3 +49,18 @@ jobs:
         run: npx tsc --pretty false --noEmit | reviewdog -f=tsc -reporter=github-pr-review -fail-level=error
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.github_token }}
+
+      - name: Check Playwright version consistency
+        run: |
+          DOCKERFILE_VERSION=$(grep -oP 'ARG PLAYWRIGHT_VERSION=\K[\d.]+' Dockerfile)
+          PACKAGE_JSON_VERSION=$(jq -r '.dependencies["@playwright/test"]' package.json | grep -oP '[\d.]+')
+
+          echo "Dockerfile Playwright version: $DOCKERFILE_VERSION"
+          echo "package.json Playwright version: $PACKAGE_JSON_VERSION"
+
+          if [ "$DOCKERFILE_VERSION" = "$PACKAGE_JSON_VERSION" ]; then
+            echo "✅ Playwright versions match: $DOCKERFILE_VERSION"
+          else
+            echo "❌ Version mismatch! Dockerfile: $DOCKERFILE_VERSION, package.json: $PACKAGE_JSON_VERSION"
+            exit 1
+          fi
