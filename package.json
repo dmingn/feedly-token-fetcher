@@ -5,7 +5,7 @@
   "main": "main.ts",
   "scripts": {
     "codegen": "playwright codegen feedly.com",
-    "dev": "tsx --env-file=.env main.ts --verbose --screenshot-dir screenshots"
+    "dev": "tsx main.ts state.json --verbose --screenshot-dir screenshots"
   },
   "author": {
     "name": "dmingn",

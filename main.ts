@@ -10,6 +10,10 @@ chromium.use(stealthPlugin);
 
 const program = new Command();
 program
+  .argument(
+    '[storageState]',
+    'storage state JSON containing Feedly auth information',
+  )
   .option('-o, --output <file>', 'Output file name (default: standard output)')
   .option('-v, --verbose', 'Enable verbose logging (debug level)', false)
   .option(
@@ -18,6 +22,7 @@ program
   )
   .parse(process.argv);
 
+const args = program.args;
 const options = program.opts();
 
 const logger = pino({
@@ -27,22 +32,6 @@ const logger = pino({
     options: { colorize: true },
   },
 });
-
-const getEmailPassword = () => {
-  const email = process.env.EMAIL;
-  if (!email) {
-    logger.error('Error: EMAIL environment variable is required');
-    process.exit(1);
-  }
-
-  const password = process.env.PASSWORD;
-  if (!password) {
-    logger.error('Error: PASSWORD environment variable is required');
-    process.exit(1);
-  }
-
-  return { email, password };
-};
 
 const randomWait = async (minMs: number, maxMs: number) => {
   const delay = Math.random() * (maxMs - minMs) + minMs;
@@ -59,6 +48,8 @@ const debugPage = async (page: Page) => {
   logger.debug(
     `Session storage keys: ${await page.evaluate(() => Object.keys(sessionStorage))}`,
   );
+
+  await takeScreenshot(page, options.screenshotDir);
 };
 
 const takeScreenshot = async (
@@ -75,86 +66,33 @@ const takeScreenshot = async (
   logger.debug(`Saved screenshot to ${screenshotFile}`);
 };
 
-const fetchFeedlySession = async (
-  email: string,
-  password: string,
-  screenshotDir: string | undefined,
-) => {
+const fetchNewStorageState = async (storageStateJson: string) => {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
-  const page = await context.newPage();
 
   try {
-    await page.goto('https://feedly.com/', {
-      waitUntil: 'networkidle',
+    const context = await browser.newContext({
+      storageState: storageStateJson,
     });
-    await takeScreenshot(page, screenshotDir);
-    logger.debug('Navigated to Feedly');
+    const page = await context.newPage();
 
-    await randomWait(3000, 5000);
-    await page.getByRole('link', { name: 'Log in', exact: true }).click();
-    logger.debug('Clicked on Log in');
+    try {
+      await page.goto('https://feedly.com/', {
+        waitUntil: 'networkidle',
+      });
+      logger.debug('Navigated to Feedly');
 
-    await page.waitForURL('**/auth/auth**', {
-      waitUntil: 'networkidle',
-    });
-    await takeScreenshot(page, screenshotDir);
+      await randomWait(3000, 5000);
 
-    await randomWait(3000, 5000);
-    await page.getByRole('link', { name: 'Sign in with Email' }).click();
-    logger.debug('Clicked on Sign in with Email');
-
-    await page.waitForURL('**/auth/login/checkEmail**', {
-      waitUntil: 'networkidle',
-    });
-    await takeScreenshot(page, screenshotDir);
-
-    await randomWait(3000, 5000);
-    await page.getByPlaceholder('Enter your email').fill(email);
-    logger.debug('Filled in email');
-
-    await randomWait(3000, 5000);
-    await page.getByRole('button', { name: 'Next' }).click();
-    logger.debug('Clicked on Next');
-
-    await page.waitForURL('**/auth/login/checkPassword**', {
-      waitUntil: 'networkidle',
-    });
-    await takeScreenshot(page, screenshotDir);
-
-    await randomWait(3000, 5000);
-    await page.getByPlaceholder('Password').click();
-    logger.debug('Clicked on Password');
-
-    await randomWait(3000, 5000);
-    await page.getByPlaceholder('characters min').fill(password);
-    logger.debug('Filled in password');
-
-    await randomWait(3000, 5000);
-    await page.getByRole('button', { name: 'Login' }).click();
-    logger.debug('Clicked on Login');
-
-    const key = 'feedly.session';
-    await page.waitForFunction((key) => localStorage.getItem(key), key);
-    const feedlySession = await page.evaluate(
-      (key) => localStorage.getItem(key),
-      key,
-    );
-
-    if (!feedlySession) {
-      throw new Error(`Failed to fetch Feedly session: ${feedlySession}`);
+      return await context.storageState();
+    } catch (error) {
+      logger.error(error);
+      await debugPage(page);
+      throw error;
+    } finally {
+      await page.close();
+      logger.debug('Closed page');
     }
-
-    logger.debug(`Fetched Feedly session: ${feedlySession}`);
-
-    return feedlySession;
-  } catch (error) {
-    logger.error(error);
-    await debugPage(page);
-    throw error;
   } finally {
-    await page.close();
-    logger.debug('Closed page');
     await browser.close();
     logger.debug('Closed browser');
   }
@@ -177,14 +115,21 @@ const outputFeedlyToken = async (
 };
 
 (async () => {
-  const { email, password } = getEmailPassword();
+  logger.debug(`Arguments: ${args}`);
+  logger.debug(`Options: ${JSON.stringify(options)}`);
 
-  const feedlySession = await fetchFeedlySession(
-    email,
-    password,
-    options.screenshotDir,
-  );
+  const storageStateJson = args[0];
+  if (!storageStateJson) {
+    throw new Error('argument storageState is required');
+  }
 
+  const newStorageState = await fetchNewStorageState(storageStateJson);
+
+  await writeFile(storageStateJson, JSON.stringify(newStorageState, null, 2));
+
+  const feedlySession = newStorageState.origins
+    .find((origin) => origin.origin === 'https://feedly.com')
+    ?.localStorage.find((item) => item.name === 'feedly.session')?.value;
   const feedlyToken = JSON.parse(feedlySession).feedlyToken;
 
   await outputFeedlyToken(options.output, feedlyToken);
