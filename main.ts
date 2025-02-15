@@ -1,7 +1,12 @@
 import { Command } from 'commander';
 import { writeFile } from 'fs/promises';
 import pino from 'pino';
-import { chromium, Page } from 'playwright';
+import { Page } from 'playwright';
+import { chromium } from 'playwright-extra';
+import stealth from 'puppeteer-extra-plugin-stealth';
+
+const stealthPlugin = stealth();
+chromium.use(stealthPlugin);
 
 const program = new Command();
 program
