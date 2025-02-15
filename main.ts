@@ -7,6 +7,10 @@ const program = new Command();
 program
   .option('-o, --output <file>', 'Output file name (default: standard output)')
   .option('-v, --verbose', 'Enable verbose logging (debug level)', false)
+  .option(
+    '-s, --screenshot-dir <dir>',
+    'Directory to save screenshots (default: none)',
+  )
   .parse(process.argv);
 
 const options = program.opts();
@@ -52,7 +56,25 @@ const debugPage = async (page: Page) => {
   );
 };
 
-const fetchFeedlySession = async (email: string, password: string) => {
+const takeScreenshot = async (
+  page: Page,
+  screenshotDir: string | undefined,
+) => {
+  if (!screenshotDir) {
+    return;
+  }
+
+  const screenshotFile = `${screenshotDir}/${Date.now()}.png`;
+
+  await page.screenshot({ path: screenshotFile, fullPage: true });
+  logger.debug(`Saved screenshot to ${screenshotFile}`);
+};
+
+const fetchFeedlySession = async (
+  email: string,
+  password: string,
+  screenshotDir: string | undefined,
+) => {
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -61,6 +83,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.goto('https://feedly.com/', {
       waitUntil: 'networkidle',
     });
+    await takeScreenshot(page, screenshotDir);
     logger.debug('Navigated to Feedly');
 
     await randomWait(500, 2000);
@@ -70,6 +93,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.waitForURL('**/auth/auth**', {
       waitUntil: 'networkidle',
     });
+    await takeScreenshot(page, screenshotDir);
 
     await randomWait(500, 2000);
     await page.getByRole('link', { name: 'Sign in with Email' }).click();
@@ -78,6 +102,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.waitForURL('**/auth/login/checkEmail**', {
       waitUntil: 'networkidle',
     });
+    await takeScreenshot(page, screenshotDir);
 
     await randomWait(500, 2000);
     await page.getByPlaceholder('Enter your email').fill(email);
@@ -90,6 +115,7 @@ const fetchFeedlySession = async (email: string, password: string) => {
     await page.waitForURL('**/auth/login/checkPassword**', {
       waitUntil: 'networkidle',
     });
+    await takeScreenshot(page, screenshotDir);
 
     await randomWait(500, 2000);
     await page.getByPlaceholder('Password').click();
@@ -148,7 +174,11 @@ const outputFeedlyToken = async (
 (async () => {
   const { email, password } = getEmailPassword();
 
-  const feedlySession = await fetchFeedlySession(email, password);
+  const feedlySession = await fetchFeedlySession(
+    email,
+    password,
+    options.screenshotDir,
+  );
 
   const feedlyToken = JSON.parse(feedlySession).feedlyToken;
 
