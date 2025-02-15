@@ -86,7 +86,7 @@ const fetchFeedlySession = async (
     await takeScreenshot(page, screenshotDir);
     logger.debug('Navigated to Feedly');
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByRole('link', { name: 'Log in', exact: true }).click();
     logger.debug('Clicked on Log in');
 
@@ -95,7 +95,7 @@ const fetchFeedlySession = async (
     });
     await takeScreenshot(page, screenshotDir);
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByRole('link', { name: 'Sign in with Email' }).click();
     logger.debug('Clicked on Sign in with Email');
 
@@ -104,11 +104,11 @@ const fetchFeedlySession = async (
     });
     await takeScreenshot(page, screenshotDir);
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByPlaceholder('Enter your email').fill(email);
     logger.debug('Filled in email');
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByRole('button', { name: 'Next' }).click();
     logger.debug('Clicked on Next');
 
@@ -117,15 +117,15 @@ const fetchFeedlySession = async (
     });
     await takeScreenshot(page, screenshotDir);
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByPlaceholder('Password').click();
     logger.debug('Clicked on Password');
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByPlaceholder('characters min').fill(password);
     logger.debug('Filled in password');
 
-    await randomWait(500, 2000);
+    await randomWait(3000, 5000);
     await page.getByRole('button', { name: 'Login' }).click();
     logger.debug('Clicked on Login');
 
