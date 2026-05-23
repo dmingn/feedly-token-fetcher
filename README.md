@@ -38,6 +38,7 @@ Create `state.json` by logging in to Feedly in a normal browser, copying `feedly
 ### Verify
 
 ```bash
+npm install
 npx playwright install chromium
 npx tsx main.ts state.json
 ```
@@ -72,5 +73,6 @@ make clean   # Remove screenshots/*.png
 ## Docker
 
 ```bash
-docker run --rm -v "$(pwd)/state.json:/workdir/state.json" <image> state.json
+docker build -t feedly-token-fetcher .
+docker run --rm -v "$(pwd)/state.json:/workdir/state.json" feedly-token-fetcher state.json
 ```
