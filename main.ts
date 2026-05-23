@@ -14,7 +14,7 @@ program
     '[storageState]',
     'storage state JSON containing Feedly auth information',
   )
-  .option('-o, --output <file>', 'Output file name (default: standard output)')
+  .option('-o, --output <file>', 'Write feedlyToken to this file')
   .option('-v, --verbose', 'Enable verbose logging (debug level)', false)
   .option(
     '-s, --screenshot-dir <dir>',
@@ -131,19 +131,12 @@ const fetchNewStorageState = async (storageStateJson: string) => {
   }
 };
 
-const outputFeedlyToken = async (
-  fileName: string | undefined,
-  token: string,
-) => {
-  if (fileName) {
-    try {
-      await writeFile(fileName, token, 'utf-8');
-      logger.info(`Wrote Feedly token to ${fileName}`);
-    } catch (error) {
-      logger.error(`Error writing to file: ${error}`);
-    }
-  } else {
-    console.log(token);
+const writeFeedlyTokenToFile = async (fileName: string, token: string) => {
+  try {
+    await writeFile(fileName, token, 'utf-8');
+    logger.info(`Wrote Feedly token to ${fileName}`);
+  } catch (error) {
+    logger.error(`Error writing to file: ${error}`);
   }
 };
 
@@ -157,11 +150,12 @@ const outputFeedlyToken = async (
   }
 
   const newStorageState = await fetchNewStorageState(storageStateJson);
+  const feedlyToken = feedlyTokenFromStorageState(newStorageState);
 
   await writeFile(storageStateJson, JSON.stringify(newStorageState, null, 2));
+  logger.info(`Updated storage state in ${storageStateJson}`);
 
-  await outputFeedlyToken(
-    options.output,
-    feedlyTokenFromStorageState(newStorageState),
-  );
+  if (options.output) {
+    await writeFeedlyTokenToFile(options.output, feedlyToken);
+  }
 })();
