@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { writeFile } from 'fs/promises';
 import pino from 'pino';
-import { Page } from 'playwright';
+import type { BrowserContext, Page } from 'playwright';
 import { chromium } from 'playwright-extra';
 import stealth from 'puppeteer-extra-plugin-stealth';
 
@@ -33,12 +33,6 @@ const logger = pino({
   },
 });
 
-const randomWait = async (minMs: number, maxMs: number) => {
-  const delay = Math.random() * (maxMs - minMs) + minMs;
-  logger.debug(`Waiting for ${Math.round(delay)} ms`);
-  return new Promise((resolve) => setTimeout(resolve, delay));
-};
-
 const debugPage = async (page: Page) => {
   logger.debug(`Page URL: ${page.url()}`);
   logger.debug(`Page title: ${await page.title()}`);
@@ -50,6 +44,43 @@ const debugPage = async (page: Page) => {
   );
 
   await takeScreenshot(page, options.screenshotDir, 'error');
+};
+
+type StorageState = Awaited<ReturnType<BrowserContext['storageState']>>;
+
+const feedlyTokenFromStorageState = (storageState: StorageState): string => {
+  const raw = storageState.origins
+    .find((origin) => origin.origin === 'https://feedly.com')
+    ?.localStorage.find((item) => item.name === 'feedly.session')?.value;
+
+  if (!raw) {
+    throw new Error('feedly.session is missing');
+  }
+
+  let session: { feedlyToken?: string } | null;
+  try {
+    session = JSON.parse(raw);
+  } catch {
+    throw new Error('feedly.session is not valid JSON');
+  }
+
+  if (!session?.feedlyToken) {
+    throw new Error('feedlyToken is missing from feedly.session');
+  }
+
+  return session.feedlyToken;
+};
+
+const loggedInReaderUrl = /https:\/\/feedly\.com\/i\//;
+
+const assertLoggedInOnPage = async (page: Page): Promise<void> => {
+  try {
+    await page.waitForURL(loggedInReaderUrl, { timeout: 15_000 });
+  } catch {
+    throw new Error(
+      'Timed out waiting for redirect to the Feedly reader after login. Check the storage state you passed is valid.',
+    );
+  }
 };
 
 const takeScreenshot = async (
@@ -82,8 +113,7 @@ const fetchNewStorageState = async (storageStateJson: string) => {
       });
       logger.debug('Navigated to Feedly');
 
-      await randomWait(3000, 5000);
-
+      await assertLoggedInOnPage(page);
       await takeScreenshot(page, options.screenshotDir, 'success');
 
       return await context.storageState();
@@ -130,10 +160,8 @@ const outputFeedlyToken = async (
 
   await writeFile(storageStateJson, JSON.stringify(newStorageState, null, 2));
 
-  const feedlySession = newStorageState.origins
-    .find((origin) => origin.origin === 'https://feedly.com')
-    ?.localStorage.find((item) => item.name === 'feedly.session')?.value;
-  const feedlyToken = JSON.parse(feedlySession).feedlyToken;
-
-  await outputFeedlyToken(options.output, feedlyToken);
+  await outputFeedlyToken(
+    options.output,
+    feedlyTokenFromStorageState(newStorageState),
+  );
 })();
