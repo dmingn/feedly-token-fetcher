@@ -1,6 +1,6 @@
 # feedly-token-fetcher
 
-CLI tool that opens Feedly with Playwright, refreshes the Playwright storage state, and prints `feedlyToken`.
+CLI tool that opens Feedly with Playwright and refreshes the Playwright storage state. Optionally writes `feedlyToken` to a file with `-o`.
 
 ## Setup: `state.json`
 
@@ -43,15 +43,15 @@ npx playwright install chromium
 npx tsx main.ts state.json
 ```
 
-If the session is valid, the tool navigates to the reader (`/i/`), updates `state.json`, and prints `feedlyToken` to stdout.
+If the session is valid, the tool navigates to the reader (`/i/`) and updates `state.json`.
 
 ## Usage
 
 ```bash
-# Print token to stdout and update state.json
+# Update state.json
 npx tsx main.ts state.json
 
-# Write token to a file
+# Also write feedlyToken to a file
 npx tsx main.ts state.json -o token.txt
 
 # Debug (verbose logs and success/error screenshots)
@@ -60,11 +60,11 @@ npm run dev
 
 ### Options
 
-| Option                       | Description                                |
-| ---------------------------- | ------------------------------------------ |
-| `-o, --output <file>`        | Write token to this file (default: stdout) |
-| `-v, --verbose`              | Enable debug logging                       |
-| `-s, --screenshot-dir <dir>` | Save screenshots on success and on error   |
+| Option                       | Description                              |
+| ---------------------------- | ---------------------------------------- |
+| `-o, --output <file>`        | Write `feedlyToken` to this file         |
+| `-v, --verbose`              | Enable debug logging                     |
+| `-s, --screenshot-dir <dir>` | Save screenshots on success and on error |
 
 ```bash
 make clean   # Remove screenshots/*.png
