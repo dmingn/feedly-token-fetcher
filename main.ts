@@ -136,7 +136,8 @@ const writeFeedlyTokenToFile = async (fileName: string, token: string) => {
     await writeFile(fileName, token, 'utf-8');
     logger.info(`Wrote Feedly token to ${fileName}`);
   } catch (error) {
-    logger.error(`Error writing to file: ${error}`);
+    logger.error(error, `Error writing to file: ${fileName}`);
+    throw error;
   }
 };
 
