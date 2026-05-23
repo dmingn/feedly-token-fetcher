@@ -18,7 +18,7 @@ program
   .option('-v, --verbose', 'Enable verbose logging (debug level)', false)
   .option(
     '-s, --screenshot-dir <dir>',
-    'Directory to save screenshots (default: none)',
+    'Directory to save screenshots on success and error (default: none)',
   )
   .parse(process.argv);
 
@@ -49,18 +49,19 @@ const debugPage = async (page: Page) => {
     `Session storage keys: ${await page.evaluate(() => Object.keys(sessionStorage))}`,
   );
 
-  await takeScreenshot(page, options.screenshotDir);
+  await takeScreenshot(page, options.screenshotDir, 'error');
 };
 
 const takeScreenshot = async (
   page: Page,
   screenshotDir: string | undefined,
+  label: 'success' | 'error',
 ) => {
   if (!screenshotDir) {
     return;
   }
 
-  const screenshotFile = `${screenshotDir}/${Date.now()}.png`;
+  const screenshotFile = `${screenshotDir}/${label}-${Date.now()}.png`;
 
   await page.screenshot({ path: screenshotFile, fullPage: true });
   logger.debug(`Saved screenshot to ${screenshotFile}`);
@@ -82,6 +83,8 @@ const fetchNewStorageState = async (storageStateJson: string) => {
       logger.debug('Navigated to Feedly');
 
       await randomWait(3000, 5000);
+
+      await takeScreenshot(page, options.screenshotDir, 'success');
 
       return await context.storageState();
     } catch (error) {
