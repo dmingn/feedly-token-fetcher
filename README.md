@@ -60,11 +60,11 @@ npm run dev
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
-| `-o, --output <file>` | Write token to this file (default: stdout) |
-| `-v, --verbose` | Enable debug logging |
-| `-s, --screenshot-dir <dir>` | Save screenshots on success and on error |
+| Option                       | Description                                |
+| ---------------------------- | ------------------------------------------ |
+| `-o, --output <file>`        | Write token to this file (default: stdout) |
+| `-v, --verbose`              | Enable debug logging                       |
+| `-s, --screenshot-dir <dir>` | Save screenshots on success and on error   |
 
 ```bash
 make clean   # Remove screenshots/*.png
