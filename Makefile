@@ -1,3 +1,7 @@
+.PHONY: clean
+clean:
+	rm -f screenshots/*.png
+
 .PHONY: create-github-release
 create-github-release:
 	@VERSION=$(shell jq -r .version package.json) && \
