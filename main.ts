@@ -57,14 +57,14 @@ const feedlyTokenFromStorageState = (storageState: StorageState): string => {
     throw new Error('feedly.session is missing');
   }
 
-  let session: { feedlyToken?: string };
+  let session: { feedlyToken?: string } | null;
   try {
     session = JSON.parse(raw);
   } catch {
     throw new Error('feedly.session is not valid JSON');
   }
 
-  if (!session.feedlyToken) {
+  if (!session?.feedlyToken) {
     throw new Error('feedlyToken is missing from feedly.session');
   }
 
