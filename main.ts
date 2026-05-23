@@ -71,8 +71,7 @@ const feedlyTokenFromStorageState = (storageState: StorageState): string => {
   return session.feedlyToken;
 };
 
-const loggedInReaderUrl =
-  /https:\/\/feedly\.com\/i\/collection\/content\/user\/[^/]+\/category\/global\.all\/?/;
+const loggedInReaderUrl = /https:\/\/feedly\.com\/i\//;
 
 const assertLoggedInOnPage = async (page: Page): Promise<void> => {
   try {
