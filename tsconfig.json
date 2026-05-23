@@ -18,7 +18,9 @@
     // Disallow features that require cross-file awareness
     "isolatedModules": true,
 
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    "noEmit": true
   },
   "exclude": ["node_modules"]
 }
