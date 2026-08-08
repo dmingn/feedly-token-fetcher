@@ -3,8 +3,8 @@ name: Build and push image
 on:
   pull_request:
   push:
-    branches: ["main"]
-    tags: ["*"]
+    branches: ['main']
+    tags: ['*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

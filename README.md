@@ -60,10 +60,10 @@ npm run dev
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
-| `-o, --output <file>` | Write `feedlyToken` to this file |
-| `-v, --verbose` | Enable debug logging |
+| Option                       | Description                              |
+| ---------------------------- | ---------------------------------------- |
+| `-o, --output <file>`        | Write `feedlyToken` to this file         |
+| `-v, --verbose`              | Enable debug logging                     |
 | `-s, --screenshot-dir <dir>` | Save screenshots on success and on error |
 
 ```bash
