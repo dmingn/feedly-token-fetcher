@@ -2,7 +2,7 @@ FROM node:22-slim AS builder
 
 WORKDIR /workdir
 
-ARG PLAYWRIGHT_VERSION=1.62.1
+ARG PLAYWRIGHT_VERSION=1.65.1
 RUN npx -y playwright@${PLAYWRIGHT_VERSION} install chromium --with-deps --only-shell
 
 COPY package*.json ./
