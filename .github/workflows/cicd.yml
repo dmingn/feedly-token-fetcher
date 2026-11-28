@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-    tags: ['*']
+    tags: ['v*']
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -58,8 +58,33 @@ jobs:
             exit 1
           fi
 
+  validate-tag:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.check.outputs.prerelease }}
+    steps:
+      - name: Validate version from tag
+        id: check
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-].*)?$ ]]; then
+            echo "Invalid version from tag: ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+
+          if [[ "${VERSION}" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build-and-push-image:
-    needs: lint
+    needs: [lint, validate-tag]
+    if: >-
+      !cancelled() &&
+      needs.lint.result == 'success' &&
+      (needs.validate-tag.result == 'success' || needs.validate-tag.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -101,3 +126,21 @@ jobs:
           platforms: linux/amd64,linux/arm64
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  create-github-release:
+    needs: [validate-tag, build-and-push-image]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PRERELEASE: ${{ needs.validate-tag.outputs.prerelease }}
+        run: |
+          ARGS=(--generate-notes)
+          if [[ "${PRERELEASE}" == "true" ]]; then
+            ARGS+=(--prerelease)
+          fi
+          gh release create "${GITHUB_REF_NAME}" "${ARGS[@]}"

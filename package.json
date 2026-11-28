@@ -1,6 +1,6 @@
 {
   "name": "feedly-token-fetcher",
-  "version": "0.3.0",
+  "version": "0.0.0-dev",
   "description": "",
   "main": "main.ts",
   "scripts": {

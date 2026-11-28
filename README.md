@@ -2,6 +2,24 @@
 
 CLI tool that opens Feedly with Playwright and refreshes the Playwright storage state. Optionally writes `feedlyToken` to a file with `-o`.
 
+## Release
+
+The git tag is the source of truth for the version. `package.json` stays at `0.0.0-dev` in the repository.
+
+1. Merge the changes you want to ship into `main`.
+2. Create and push a tag:
+
+```bash
+git switch main
+git pull --ff-only
+git tag v0.3.1
+git push origin v0.3.1
+```
+
+3. The CI/CD workflow runs on the tag, pushes the Docker image to GHCR, and creates a GitHub Release.
+
+Use a pre-release identifier in the tag when needed (for example `v0.3.1-rc.1`). Those releases are marked as GitHub pre-releases.
+
 ## Setup: `state.json`
 
 Create `state.json` by logging in to Feedly in a normal browser, copying `feedly.session` from DevTools, and saving it in a minimal Playwright storage state file.
